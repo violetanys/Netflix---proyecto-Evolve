@@ -6,7 +6,7 @@ Este proyecto tiene como propósito diseñar e implementar un **pipeline estruct
 ---
 
 ##  2. Arquitectura y Estructura del Proyecto
-El proyecto sigue principios de diseño de ingeniería de software mediante una estructura modular, limpia y reproducible. Se ha incorporado una carpeta dedicada a almacenar las imágenes de los gráficos exportados:
+'''El proyecto sigue principios de diseño de ingeniería de software mediante una estructura modular, limpia y reproducible. Se ha incorporado una carpeta dedicada a almacenar las imágenes de los gráficos exportados:
 
 ```text
 Netflix---proyecto-Evolve/
@@ -29,6 +29,7 @@ Netflix---proyecto-Evolve/
 │   ├── cleaning.py   <- Módulo de transformación, imputación de nulos y feature engineering
 │   └── viz.py        <- Módulo con las funciones de visualización avanzadas
 └── README.md         <- Documento de presentación del proyecto (este archivo)
+```
 
 
 
