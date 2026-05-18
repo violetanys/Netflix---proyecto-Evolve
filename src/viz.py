@@ -1,182 +1,157 @@
-# src/viz.py
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-# Configuramos un estilo base limpio para todas las gráficas
+# Configuración estética global para cumplir con la alta relación dato/tinta
 sns.set_theme(style="white")
+NETFLIX_RED = "#E50914"
+NEUTRAL_GRAY = "#4E4E4E"
 
-def plot_content_type(df: pd.DataFrame):
-    """
-    Pregunta 1: ¿El catálogo está dominado por películas o series?
-    Tipo de gráfico: Conteo / Barras verticales.
-    """
-    fig, ax = plt.subplots(figsize=(6, 4.5))
-    colores = ['#E50914', '#4E4E4E'] # Rojo Netflix y Gris oscuro
-    
-    sns.countplot(
+def plot_content_type(df):
+    """Pregunta 1: Proporción de Películas vs Series"""
+    plt.figure(figsize=(7, 5))
+    ax = sns.countplot(
         data=df, 
         x='type', 
-        ax=ax, 
-        palette=colores, 
-        order=df['type'].value_counts().index,
+        palette=[NETFLIX_RED, NEUTRAL_GRAY],
         hue='type',
         legend=False
     )
     
-    ax.set_title('Catálogo de Netflix: ¿Predominan Películas o Series?', fontsize=12, pad=15, fontweight='bold')
-    ax.set_xlabel('Tipo de Contenido', fontsize=10, labelpad=8)
-    ax.set_ylabel('Cantidad Registrada', fontsize=10, labelpad=8)
-    
-    sns.despine() # Quita bordes superior y derecho
-    
-    # Añadir etiquetas sobre las barras
+    # Añadir etiquetas de conteo sobre las barras
     for p in ax.patches:
-        ax.annotate(f'{int(p.get_height()):,}', 
+        ax.annotate(f'{int(p.get_height())}', 
                     (p.get_x() + p.get_width() / 2., p.get_height()), 
-                    ha='center', va='center', xytext=(0, 8), 
-                    textcoords='offset points', fontsize=9, fontweight='bold')
-    
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_movie_duration(df: pd.DataFrame):
-    """
-    Pregunta 2: ¿Cuál es la duración promedio de las películas y cómo se distribuye?
-    Tipo de gráfico: Histograma con curva de densidad (KDE).
-    """
-    # Filtramos solo las películas y nos aseguramos de que no haya nulos en duration_num
-    movies_df = df[(df['type'] == 'Movie') & (df['duration_num'].notnull())]
-    
-    fig, ax = plt.subplots(figsize=(7, 4.5))
-    
-    sns.histplot(
-        data=movies_df, 
-        x='duration_num', 
-        kde=True, 
-        ax=ax, 
-        color='#E50914', 
-        bins=30,
-        edgecolor='white'
-    )
-    
-    ax.set_title('Distribución de la Duración de las Películas en Netflix', fontsize=12, pad=15, fontweight='bold')
-    ax.set_xlabel('Duración (minutos)', fontsize=10, labelpad=8)
-    ax.set_ylabel('Frecuencia (Cantidad)', fontsize=10, labelpad=8)
-    
+                    ha='center', va='baseline', fontsize=11, color='black', xytext=(0, 5),
+                    textcoords='offset points')
+                    
+    plt.title("Distribución del Catálogo Histórico de Netflix", fontsize=14, pad=15, weight='bold')
+    plt.xlabel("Tipo de Contenido", fontsize=12)
+    plt.ylabel("Cantidad de Títulos", fontsize=12)
     sns.despine()
     plt.tight_layout()
+    
+    # Guardado único para el Gráfico 1
+    plt.savefig('../reports/visualizaciones/1_tipo_contenido.png', dpi=300)
     plt.show()
 
+def plot_movie_duration(df):
+    """Pregunta 2: Distribución de la duración de películas"""
+    # Filtrar solo películas y asegurar que la duración sea numérica
+    movies = df[df['type'] == 'Movie'].dropna(subset=['duration_num'])
+    
+    plt.figure(figsize=(9, 5))
+    sns.histplot(
+        data=movies, 
+        x='duration_num', 
+        kde=True, 
+        color=NETFLIX_RED, 
+        bins=30
+    )
+    
+    plt.title("Distribución de la Duración de las Películas (Minutos)", fontsize=14, pad=15, weight='bold')
+    plt.xlabel("Duración (minutos)", fontsize=12)
+    plt.ylabel("Frecuencia", fontsize=12)
+    sns.despine()
+    plt.tight_layout()
+    
+    # Guardado único para el Gráfico 2
+    plt.savefig('../reports/visualizaciones/2_distribucion_duracion.png', dpi=300)
+    plt.show()
 
-def plot_top_countries(df: pd.DataFrame):
-    """
-    Pregunta 3: ¿Cuáles son los 5 países que más contenido producen?
-    Tipo de gráfico: Barras horizontales (ideal para leer nombres largos).
-    """
-    # Quitamos 'Unknown Country' para ver los países reales productores
-    df_filtered = df[df['country'] != 'Unknown Country']
+def plot_top_countries(df):
+    """Pregunta 3: Top 5 países productores (excluyendo Unknown)"""
+    # Filtrar Unknown y obtener los 5 principales países
+    filtered_df = df[df['country'] != 'Unknown']
+    top_countries = filtered_df['country'].value_counts().head(5)
     
-    # Obtenemos el top 5 de países
-    top_5 = df_filtered['country'].value_counts().head(5)
-    
-    fig, ax = plt.subplots(figsize=(7, 4.5))
-    
-    sns.barplot(
-        x=top_5.values, 
-        y=top_5.index, 
-        ax=ax, 
-        palette='Reds_r', # Degradado de rojos
-        hue=top_5.index,
+    plt.figure(figsize=(9, 5))
+    ax = sns.barplot(
+        x=top_countries.values, 
+        y=top_countries.index, 
+        hue=top_countries.index,
+        palette="Greys_r",
         legend=False
     )
     
-    ax.set_title('Top 5 Países Productores de Contenido en Netflix', fontsize=12, pad=15, fontweight='bold')
-    ax.set_xlabel('Cantidad Total de Títulos', fontsize=10, labelpad=8)
-    ax.set_ylabel('País', fontsize=10, labelpad=8)
+    # Resaltar el líder (primer elemento) pintándolo de rojo Netflix
+    ax.patches[0].set_facecolor(NETFLIX_RED)
     
-    sns.despine()
-    
-    # Añadir valores al final de cada barra horizontal
-    for i, v in enumerate(top_5.values):
-        ax.text(v + 15, i, f'{int(v):,}', va='center', fontsize=9, fontweight='bold')
+    # Añadir valores al final de las barras horizontales
+    for i, v in enumerate(top_countries.values):
+        ax.text(v + 20, i, f" {v}", va='center', fontsize=10, weight='bold')
         
+    plt.title("Top 5 Países Líderes en Producción de Contenido", fontsize=14, pad=15, weight='bold')
+    plt.xlabel("Cantidad Total de Títulos", fontsize=12)
+    plt.ylabel("País", fontsize=12)
+    sns.despine()
     plt.tight_layout()
+    
+    # Guardado único para el Gráfico 3
+    plt.savefig('../reports/visualizaciones/3_top_paises.png', dpi=300)
     plt.show()
 
-
-def plot_seasonality(df: pd.DataFrame):
-    """
-    Pregunta 4: ¿En qué meses del año se suele incorporar más contenido?
-    Tipo de gráfico: Barras verticales ordenadas por calendario.
-    """
-    # Nos aseguramos de quitar filas sin mes
-    df_filtered = df[df['month_added'].notnull()]
+def plot_seasonality(df):
+    """Pregunta 4: Estacionalidad por meses (Lanzamientos)"""
+    # Asegurar orden cronológico de los meses
+    months_order = [
+        'January', 'February', 'March', 'April', 'May', 'June', 
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ]
     
-    # Orden cronológico estándar de los meses
-    orden_meses = ['January', 'February', 'March', 'April', 'May', 'June', 
-                   'July', 'August', 'September', 'October', 'November', 'December']
+    # Filtrar nulos en los meses y contar
+    df_months = df.dropna(subset=['month_added'])
+    monthly_counts = df_months['month_added'].value_counts().reindex(months_order)
     
-    conteo_meses = df_filtered['month_added'].value_counts().reindex(orden_meses)
-    
-    fig, ax = plt.subplots(figsize=(9, 4.5))
-    
-    sns.barplot(
-        x=conteo_meses.index, 
-        y=conteo_meses.values, 
-        ax=ax, 
-        color='#4E4E4E', # Gris neutro para resaltar tendencias sin saturar
+    plt.figure(figsize=(10, 5))
+    ax = sns.barplot(
+        x=monthly_counts.index, 
+        y=monthly_counts.values, 
+        hue=monthly_counts.index,
+        color=NEUTRAL_GRAY,
+        legend=False
     )
     
-    # Destacamos el mes con más lanzamientos pintándolo de rojo
-    max_idx = conteo_meses.values.argmax()
-    ax.patches[max_idx].set_facecolor('#E50914')
+    # Resaltar visualmente la barra con el valor máximo pintándola de rojo
+    max_idx = monthly_counts.values.argmax()
+    ax.patches[max_idx].set_facecolor(NETFLIX_RED)
     
-    ax.set_title('Estacionalidad: Lanzamientos por Mes en Netflix', fontsize=12, pad=15, fontweight='bold')
-    ax.set_xlabel('Mes de Adición', fontsize=10, labelpad=8)
-    ax.set_ylabel('Títulos Lanzados', fontsize=10, labelpad=8)
-    
-    # Rotamos ligeramente los nombres para que queden bien espaciados
-    plt.xticks(rotation=30)
-    
+    plt.title("Estacionalidad: Volumen de Contenido Añadido por Mes", fontsize=14, pad=15, weight='bold')
+    plt.xlabel("Mes del Año", fontsize=12)
+    plt.ylabel("Cantidad de Títulos", fontsize=12)
+    plt.xticks(rotation=45)
     sns.despine()
     plt.tight_layout()
+    
+    # Guardado único para el Gráfico 4
+    plt.savefig('../reports/visualizaciones/4_estacionalidad_meses.png', dpi=300)
     plt.show()
 
-
-def plot_evolution(df: pd.DataFrame):
-    """
-    Pregunta 5: ¿Cómo ha evolucionado la adición de Películas vs Series a lo largo de los años?
-    Tipo de gráfico: Gráfico de líneas temporal (Series temporales).
-    """
-    # Filtramos a partir de 2008 (cuando Netflix empezó a meter contenido digital constante)
-    df_filtered = df[(df['year_added'].notnull()) & (df['year_added'] >= 2008)]
+def plot_evolution(df):
+    """Pregunta 5: Evolución temporal de Películas vs Series"""
+    # Agrupar por año de adición y tipo de contenido, filtrando años lógicos (ej. desde 2008)
+    evolution = df[df['year_added'] >= 2008].groupby(['year_added', 'type']).size().reset_index(name='count')
     
-    # Agrupamos por año y tipo para contar los registros
-    evolucion = df_filtered.groupby(['year_added', 'type']).size().reset_index(name='count')
-    
-    fig, ax = plt.subplots(figsize=(8, 4.5))
-    colores = {'Movie': '#E50914', 'TV Show': '#4E4E4E'}
-    
+    plt.figure(figsize=(10, 5))
     sns.lineplot(
-        data=evolucion, 
+        data=evolution, 
         x='year_added', 
         y='count', 
         hue='type', 
-        ax=ax, 
-        palette=colores, 
-        linewidth=2.5,
-        marker='o' # Añade un punto en cada año para marcar el dato exacto
+        palette=[NETFLIX_RED, NEUTRAL_GRAY], 
+        style='type', 
+        markers=True, 
+        dashes=False,
+        linewidth=2.5
     )
     
-    ax.set_title('Evolución Temporal: Películas vs Series Añadidas', fontsize=12, pad=15, fontweight='bold')
-    ax.set_xlabel('Año de Adición a la Plataforma', fontsize=10, labelpad=8)
-    ax.set_ylabel('Cantidad Lanzada', fontsize=10, labelpad=8)
-    
-    # Ubicar la leyenda de manera limpia
-    ax.legend(title='Tipo de Contenido', frameon=False)
-    
+    plt.title("Evolución Temporal del Catálogo (Adiciones Anuales)", fontsize=14, pad=15, weight='bold')
+    plt.xlabel("Año de Adición a la Plataforma", fontsize=12)
+    plt.ylabel("Cantidad de Títulos Añadidos", fontsize=12)
+    plt.legend(title="Tipo de Contenido")
     sns.despine()
     plt.tight_layout()
+    
+    # Guardado único para el Gráfico 5
+    plt.savefig('../reports/visualizaciones/5_evolucion_temporal.png', dpi=300)
     plt.show()
