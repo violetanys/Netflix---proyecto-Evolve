@@ -18,7 +18,7 @@ def plot_content_type(df):
         legend=False
     )
     
-    # Añadir etiquetas de conteo sobre las barras
+    
     for p in ax.patches:
         ax.annotate(f'{int(p.get_height())}', 
                     (p.get_x() + p.get_width() / 2., p.get_height()), 
@@ -31,7 +31,7 @@ def plot_content_type(df):
     sns.despine()
     plt.tight_layout()
     
-    # Guardado único para el Gráfico 1
+    
     plt.savefig('../reports/visualizaciones/1_tipo_contenido.png', dpi=300)
     plt.show()
 
